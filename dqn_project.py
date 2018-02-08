@@ -45,7 +45,7 @@ class DQN(object):
         self.clone_steps = 5000
 
         # memory
-        self.replay_memory = ReplayMemory(100000)
+        self.replay_memory = ReplayMemory(1000000)
         # Perhaps you want to have some samples in the memory before starting to train?
         self.min_replay_size = 10000
 
@@ -65,7 +65,7 @@ class DQN(object):
         self.q_val_error = tf.reduce_mean(self.temp2)
         
         print("loss value is",self.q_val_error)
-        self.optimizer = tf.train.AdamOptimizer(0.01)
+        self.optimizer = tf.train.AdamOptimizer(0.001)
         self.train_model = self.optimizer.minimize(self.q_val_error)
 #        update_opt = self.optimizer(q_val_error)
 #        return update_opt
@@ -185,6 +185,7 @@ class DQN(object):
         obs = env.reset()
         count = 0
         while not done:
+            env.render()
             count += 1
             action = self.select_action(obs, evaluation_mode=False)
             next_obs, reward, done, info = env.step(action)
