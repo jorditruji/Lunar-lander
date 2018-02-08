@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 from itertools import count
 from replay_memory import ReplayMemory, Transition
-import env_wrappers
+#import env_wrappers
 import random
 import os
 import argparse
@@ -35,7 +35,7 @@ class DQN(object):
         self.sess = tf.Session()
 
         # A few starter hyperparameters
-        self.batch_size = 128
+        self.batch_size = 500
         self.gamma = 0.99
         # If using e-greedy exploration
         self.eps_start = 0.9
@@ -64,8 +64,8 @@ class DQN(object):
         self.temp2 = tf.squared_difference(self.target_q_val, self.action_q_val)
         self.q_val_error = tf.reduce_mean(self.temp2)
         
-#        print("loss value is",loss_val)
-        self.optimizer = tf.train.AdamOptimizer(0.0001)
+        print("loss value is",self.q_val_error)
+        self.optimizer = tf.train.AdamOptimizer(0.01)
         self.train_model = self.optimizer.minimize(self.q_val_error)
 #        update_opt = self.optimizer(q_val_error)
 #        return update_opt
@@ -95,12 +95,16 @@ class DQN(object):
         Currently returns an op that gives all zeros.
         """
         
-        x = tf.contrib.layers.fully_connected(observation_input, 64, activation_fn=tf.nn.relu)
-        y = tf.contrib.layers.fully_connected(x, 32, activation_fn=tf.nn.relu)
-        z = tf.contrib.layers.fully_connected(y, 32, activation_fn=tf.nn.relu)
+        fully1 = tf.contrib.layers.fully_connected(observation_input, 64, activation_fn=tf.nn.relu)
+        fully2 = tf.contrib.layers.fully_connected(fully1, 32, activation_fn=tf.nn.relu)
+        drop1 = tf.nn.dropout(fully2,0.5)
+        fully3 = tf.contrib.layers.fully_connected(drop1, 16, activation_fn=tf.nn.relu)
+        fully4 = tf.contrib.layers.fully_connected(fully3, 8, activation_fn=tf.nn.relu)
+        drop2 = tf.nn.dropout(fully4,0.5)
+
 #        a = tf.contrib.layers.fully_connected(z, 6, activation_fn=tf.nn.relu)
 #        b = tf.contrib.layers.fully_connected(a, 4, activation_fn=tf.nn.relu)
-        q_vals = tf.contrib.layers.fully_connected(z,self.env.action_space.n, activation_fn=None)
+        q_vals = tf.contrib.layers.fully_connected(drop2,self.env.action_space.n, activation_fn=None)
         return q_vals
 
 
